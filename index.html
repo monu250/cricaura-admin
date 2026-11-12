@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CricAura Super Admin</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2.0/plugins/fontawesome-free/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2.0/dist/css/adminlte.min.css">
+</head>
+<body class="hold-transition login-page">
+
+<!-- ================= LOGIN VIEW ================= -->
+<div id="loginView" class="login-box">
+  <div class="login-logo"><b>CricAura</b> Super Admin</div>
+  <div class="card">
+    <div class="card-body login-card-body">
+      <p class="login-box-msg">Sign in to manage tournaments</p>
+      <div id="fileWarning" class="alert alert-warning d-none">
+        Open this page from a web address (https://...), not from a file. Login does not work from a file.
+      </div>
+      <div id="loginError" class="alert alert-danger d-none"></div>
+      <form id="loginForm">
+        <div class="input-group mb-3">
+          <input id="email" type="email" class="form-control" placeholder="Email" required autocomplete="username">
+          <div class="input-group-append"><div class="input-group-text"><span class="fas fa-envelope"></span></div></div>
+        </div>
+        <div class="input-group mb-3">
+          <input id="password" type="password" class="form-control" placeholder="Password" required autocomplete="current-password">
+          <div class="input-group-append"><div class="input-group-text"><span class="fas fa-lock"></span></div></div>
+        </div>
+        <button id="loginBtn" type="submit" class="btn btn-primary btn-block">Sign in</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ================= APP VIEW ================= -->
+<div id="appView" class="wrapper d-none">
+
+  <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+      </li>
+    </ul>
+    <ul class="navbar-nav ml-auto">
+      <li class="nav-item d-none d-sm-block"><span id="userEmail" class="nav-link text-muted"></span></li>
+      <li class="nav-item"><button id="logoutBtn" class="btn btn-sm btn-outline-danger mt-1">Logout</button></li>
+    </ul>
+  </nav>
+
+  <aside class="main-sidebar sidebar-dark-primary elevation-4">
+    <a href="#" class="brand-link"><span class="brand-text font-weight-light pl-3"><b>CricAura</b> Admin</span></a>
+    <div class="sidebar">
+      <nav class="mt-2">
+        <ul class="nav nav-pills nav-sidebar flex-column" role="menu">
+          <li class="nav-item">
+            <a href="#" class="nav-link active"><i class="nav-icon fas fa-trophy"></i><p>Tournaments</p></a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link disabled"><i class="nav-icon fas fa-user-shield"></i><p>Admins (coming soon)</p></a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link disabled"><i class="nav-icon fas fa-baseball-ball"></i><p>Matches (coming soon)</p></a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </aside>
+
+  <div class="content-wrapper">
+    <section class="content-header">
+      <div class="container-fluid"><h1>Tournaments</h1></div>
+    </section>
+    <section class="content">
+      <div class="container-fluid">
+
+        <div class="card card-primary">
+          <div class="card-header"><h3 class="card-title">Create tournament</h3></div>
+          <form id="tournamentForm">
+            <div class="card-body">
+              <div id="formError" class="alert alert-danger d-none"></div>
+              <div class="form-group">
+                <label for="tName">Tournament name</label>
+                <input id="tName" type="text" class="form-control" placeholder="e.g. Village Premier League" required maxlength="80">
+              </div>
+              <div class="form-group">
+                <label for="tPlace">Village / area</label>
+                <input id="tPlace" type="text" class="form-control" placeholder="e.g. Rampur, Jaipur" required maxlength="80">
+              </div>
+              <div class="form-row">
+                <div class="form-group col-6">
+                  <label for="tStart">Start date</label>
+                  <input id="tStart" type="date" class="form-control" required>
+                </div>
+                <div class="form-group col-6">
+                  <label for="tEnd">End date</label>
+                  <input id="tEnd" type="date" class="form-control" required>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer">
+              <button id="saveBtn" type="submit" class="btn btn-primary">Save tournament</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><h3 class="card-title">All tournaments</h3></div>
+          <div class="card-body table-responsive p-0">
+            <table class="table table-hover text-nowrap">
+              <thead>
+                <tr><th>Name</th><th>Place</th><th>Start</th><th>End</th><th>Status</th></tr>
+              </thead>
+              <tbody id="tournamentRows"></tbody>
+            </table>
+            <p id="emptyMsg" class="text-muted p-3 mb-0">No tournaments yet.</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2.0/dist/js/adminlte.min.js"></script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut }
+    from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+  import { getFirestore, doc, getDoc, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp }
+    from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+  // Firebase web config (not a secret; real security is in Firestore rules)
+  const firebaseConfig = {
+    apiKey: "AIzaSyCjlyUCy_EUDPrHp76hhVK_okW2BnqGctk",
+    authDomain: "cricaura-bf4d4.firebaseapp.com",
+    projectId: "cricaura-bf4d4",
+    storageBucket: "cricaura-bf4d4.firebasestorage.app",
+    messagingSenderId: "545281017943",
+    appId: "1:545281017943:web:0575260f7d7ed51ff0fb12"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  const $ = (id) => document.getElementById(id);
+  let unsubscribeTournaments = null;
+  let pendingMessage = "";
+
+  if (location.protocol === "file:") $("fileWarning").classList.remove("d-none");
+
+  function friendlyError(err) {
+    switch (err && err.code) {
+      case "auth/invalid-credential":
+      case "auth/wrong-password":
+      case "auth/user-not-found":
+        return "Wrong email or password.";
+      case "auth/too-many-requests":
+        return "Too many attempts. Please wait a few minutes and try again.";
+      case "auth/network-request-failed":
+        return "No internet connection.";
+      case "auth/invalid-api-key":
+        return "Invalid API key. Check firebaseConfig in this file.";
+      case "permission-denied":
+      case "firestore/permission-denied":
+        return "Permission denied by Firestore rules.";
+      default:
+        return (err && err.message) ? err.message : "Something went wrong.";
+    }
+  }
+
+  function showLogin(message) {
+    $("appView").classList.add("d-none");
+    $("loginView").classList.remove("d-none");
+    document.body.className = "hold-transition login-page";
+    const box = $("loginError");
+    box.textContent = message || "";
+    box.classList.toggle("d-none", !message);
+    $("loginBtn").disabled = false;
+  }
+
+  function showApp(user) {
+    $("loginView").classList.add("d-none");
+    $("appView").classList.remove("d-none");
+    document.body.className = "hold-transition sidebar-mini layout-fixed";
+    $("userEmail").textContent = user.email || "";
+    listenTournaments();
+  }
+
+  function listenTournaments() {
+    if (unsubscribeTournaments) unsubscribeTournaments();
+    const q = query(collection(db, "tournaments"), orderBy("createdAt", "desc"));
+    unsubscribeTournaments = onSnapshot(q, (snap) => {
+      const body = $("tournamentRows");
+      body.textContent = "";
+      snap.forEach((d) => {
+        const t = d.data();
+        const tr = document.createElement("tr");
+        [t.name, t.place, t.startDate, t.endDate].forEach((val) => {
+          const td = document.createElement("td");
+          td.textContent = val || "-";
+          tr.appendChild(td);
+        });
+        const st = document.createElement("td");
+        const badge = document.createElement("span");
+        badge.className = "badge badge-success";
+        badge.textContent = t.status || "active";
+        st.appendChild(badge);
+        tr.appendChild(st);
+        body.appendChild(tr);
+      });
+      $("emptyMsg").classList.toggle("d-none", !snap.empty);
+    }, (err) => {
+      const box = $("formError");
+      box.textContent = "Could not load tournaments: " + friendlyError(err);
+      box.classList.remove("d-none");
+    });
+  }
+
+  // ---- Login ----
+  $("loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    $("loginBtn").disabled = true;
+    $("loginError").classList.add("d-none");
+    try {
+      await signInWithEmailAndPassword(auth, $("email").value.trim(), $("password").value);
+    } catch (err) {
+      showLogin(friendlyError(err));
+    }
+  });
+
+  $("logoutBtn").addEventListener("click", () => signOut(auth));
+
+  // ---- Session check: only super admins may enter ----
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      if (unsubscribeTournaments) { unsubscribeTournaments(); unsubscribeTournaments = null; }
+      showLogin(pendingMessage);
+      pendingMessage = "";
+      return;
+    }
+    try {
+      const snap = await getDoc(doc(db, "users", user.uid));
+      if (snap.exists() && snap.data().role === "super_admin") {
+        showApp(user);
+      } else {
+        pendingMessage = "This account is not a super admin.";
+        await signOut(auth);
+      }
+    } catch (err) {
+      pendingMessage = "Could not check your role: " + friendlyError(err);
+      await signOut(auth);
+    }
+  });
+
+  // ---- Create tournament ----
+  $("tournamentForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const err = $("formError");
+    err.classList.add("d-none");
+
+    const name = $("tName").value.trim();
+    const place = $("tPlace").value.trim();
+    const startDate = $("tStart").value;
+    const endDate = $("tEnd").value;
+
+    if (!name || !place) {
+      err.textContent = "Name and place are required.";
+      err.classList.remove("d-none");
+      return;
+    }
+    if (endDate < startDate) {
+      err.textContent = "End date cannot be before start date.";
+      err.classList.remove("d-none");
+      return;
+    }
+
+    $("saveBtn").disabled = true;
+    try {
+      await addDoc(collection(db, "tournaments"), {
+        name,
+        place,
+        startDate,
+        endDate,
+        status: "active",
+        adminUid: null,            // filled later when an admin is created
+        createdBy: auth.currentUser.uid,
+        createdAt: serverTimestamp()
+      });
+      $("tournamentForm").reset();
+    } catch (ex) {
+      err.textContent = "Could not save: " + friendlyError(ex);
+      err.classList.remove("d-none");
+    } finally {
+      $("saveBtn").disabled = false;
+    }
+  });
+</script>
+</body>
+</html>
