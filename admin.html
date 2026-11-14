@@ -111,17 +111,31 @@
               </div>
             </div>
             <div class="row">
+              <div class="col-12 mb-3">
+                <label for="mPlayersA" class="form-label">Team A players (one name per line)</label>
+                <textarea id="mPlayersA" class="form-control" rows="5" placeholder="Ramesh&#10;Suresh&#10;Mahesh" required></textarea>
+              </div>
+              <div class="col-12 mb-3">
+                <label for="mPlayersB" class="form-label">Team B players (one name per line)</label>
+                <textarea id="mPlayersB" class="form-control" rows="5" placeholder="Amit&#10;Sumit&#10;Rohit" required></textarea>
+              </div>
+            </div>
+            <div class="row">
               <div class="col-6 mb-3">
                 <label for="mOvers" class="form-label">Overs per side</label>
                 <input id="mOvers" type="number" class="form-control" value="10" min="1" max="50" required>
               </div>
               <div class="col-6 mb-3">
-                <label for="mFirst" class="form-label">Batting first</label>
-                <select id="mFirst" class="form-select">
-                  <option value="A">Team A</option>
-                  <option value="B">Team B</option>
-                </select>
+                <label for="mMaxBowler" class="form-label">Max overs per bowler</label>
+                <input id="mMaxBowler" type="number" class="form-control" min="1" max="50" placeholder="Auto">
               </div>
+            </div>
+            <div class="mb-3">
+              <label for="mFirst" class="form-label">Batting first</label>
+              <select id="mFirst" class="form-select">
+                <option value="A">Team A</option>
+                <option value="B">Team B</option>
+              </select>
             </div>
             <div class="mb-3">
               <label for="mVenue" class="form-label">Ground / venue</label>
@@ -173,9 +187,22 @@
         </div>
       </div>
 
-      <div class="card mb-3">
-        <div class="card-header"><h3 class="card-title">This over</h3></div>
-        <div class="card-body" id="recentBalls"></div>
+      <div id="hint" class="alert alert-warning d-none"></div>
+
+      <div id="setupCard" class="card card-warning card-outline mb-3 d-none">
+        <div class="card-header"><h3 class="card-title" id="setupTitle">Select players</h3></div>
+        <div class="card-body" id="setupFields"></div>
+        <div class="card-footer"><button id="setupBtn" class="btn btn-warning">Confirm</button></div>
+      </div>
+
+      <div id="creaseCard" class="card mb-3">
+        <div class="card-header"><h3 class="card-title">At the crease</h3></div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item d-flex justify-content-between"><span id="creaseStrikerName">Striker: -</span><span id="creaseStrikerStat"></span></li>
+          <li class="list-group-item d-flex justify-content-between"><span id="creaseNonName">Non-striker: -</span><span id="creaseNonStat"></span></li>
+          <li class="list-group-item d-flex justify-content-between"><span id="creaseBowlerName">Bowler: -</span><span id="creaseBowlerStat"></span></li>
+        </ul>
+        <div class="card-body pt-2"><div class="text-secondary small mb-1">This over</div><div id="recentBalls"></div></div>
       </div>
 
       <div class="card mb-3">
@@ -207,9 +234,65 @@
         </div>
       </div>
 
+      <div class="card mb-3">
+        <div class="card-header"><h3 class="card-title" id="batTitle">Batting</h3></div>
+        <div class="card-body p-0 table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead><tr><th>Batter</th><th class="text-end">R</th><th class="text-end">B</th><th class="text-end">4s</th><th class="text-end">6s</th><th class="text-end">SR</th></tr></thead>
+            <tbody id="batRows"></tbody>
+          </table>
+        </div>
+      </div>
+
       <div class="card mb-4">
-        <div class="card-header"><h3 class="card-title">Commentary</h3></div>
-        <ul id="commentary" class="list-group list-group-flush"></ul>
+        <div class="card-header"><h3 class="card-title">Bowling</h3></div>
+        <div class="card-body p-0 table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead><tr><th>Bowler</th><th class="text-end">O</th><th class="text-end">R</th><th class="text-end">W</th><th class="text-end">Econ</th></tr></thead>
+            <tbody id="bowlRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Wicket modal -->
+<div class="modal fade" id="wicketModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Wicket</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="wKind" class="form-label">How out?</label>
+          <select id="wKind" class="form-select">
+            <option value="bowled">Bowled</option>
+            <option value="caught">Caught</option>
+            <option value="lbw">LBW</option>
+            <option value="run out">Run out</option>
+            <option value="stumped">Stumped</option>
+            <option value="hit wicket">Hit wicket</option>
+          </select>
+        </div>
+        <div class="mb-3 d-none" id="wOutWrap">
+          <label for="wOut" class="form-label">Who is out?</label>
+          <select id="wOut" class="form-select"></select>
+        </div>
+        <div class="mb-3 d-none" id="wFielderWrap">
+          <label for="wFielder" class="form-label">Fielder</label>
+          <select id="wFielder" class="form-select"></select>
+        </div>
+        <div class="mb-3 d-none" id="wRunsWrap">
+          <label for="wRuns" class="form-label">Runs completed before the run out</label>
+          <select id="wRuns" class="form-select"><option>0</option><option>1</option><option>2</option><option>3</option></select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" id="wConfirm">Confirm wicket</button>
       </div>
     </div>
   </div>
@@ -258,27 +341,171 @@
   // ==== PURE:START (scoring logic, no Firebase here) ====
   const other = (k) => (k === "A" ? "B" : "A");
   const nameOf = (m, k) => (k === "A" ? m.teamA : m.teamB);
+  const squad = (m, k) => (k === "A" ? m.playersA : m.playersB) || [];
   const oversText = (legal) => Math.floor(legal / 6) + "." + (legal % 6);
+  const battingKey = (m, inn) => (inn === 1 ? m.battingFirst : other(m.battingFirst));
+  const emptyCrease = () => ({ striker: null, nonStriker: null, bowler: null });
+  const maxOversFor = (m) => m.maxOversPerBowler || Math.ceil(m.totalOvers / 5);
 
-  function totals(match, balls) {
-    const first = match.battingFirst;
-    const t = { A: { runs: 0, wkts: 0, legal: 0, n: 0 }, B: { runs: 0, wkts: 0, legal: 0, n: 0 } };
-    balls.forEach((b) => {
-      const bat = b.innings === 1 ? first : other(first);
-      const x = t[bat];
-      x.n += 1;
-      x.runs += b.runs;
-      if (b.type === "wicket") x.wkts += 1;
-      if (b.legal) x.legal += 1;
+  function dismissalText(d) {
+    if (!d) return null;
+    switch (d.kind) {
+      case "bowled": return "b " + d.bowler;
+      case "lbw": return "lbw b " + d.bowler;
+      case "caught": return "c " + (d.fielder || "fielder") + " b " + d.bowler;
+      case "stumped": return "st " + (d.fielder || "keeper") + " b " + d.bowler;
+      case "hit wicket": return "hit wicket b " + d.bowler;
+      case "run out": return "run out" + (d.fielder ? " (" + d.fielder + ")" : "");
+      default: return d.kind;
+    }
+  }
+
+  // Everything about one innings, derived from the ball events.
+  function inningsStats(match, balls, inn) {
+    const st = { team: battingKey(match, inn), runs: 0, wkts: 0, legal: 0, n: 0, order: [], bat: {}, bowl: {}, out: {} };
+    const touch = (name) => {
+      if (!name || st.bat[name]) return;
+      st.bat[name] = { runs: 0, balls: 0, fours: 0, sixes: 0 };
+      st.order.push(name);
+    };
+    balls.filter((b) => b.innings === inn).forEach((b) => {
+      st.n += 1;
+      st.runs += b.runs;
+      if (b.legal) st.legal += 1;
+      touch(b.striker);
+      touch(b.nonStriker);
+      const bs = st.bat[b.striker];
+      if (bs && b.type !== "wide") bs.balls += 1;
+      if (bs) bs.runs += b.batRuns || 0;
+      if (bs && (b.type === "run" || b.type === "noball")) {
+        if (b.batRuns === 4) bs.fours += 1;
+        if (b.batRuns === 6) bs.sixes += 1;
+      }
+      if (b.bowler) {
+        if (!st.bowl[b.bowler]) st.bowl[b.bowler] = { balls: 0, runs: 0, wkts: 0 };
+        const bw = st.bowl[b.bowler];
+        if (b.legal) bw.balls += 1;
+        if (b.type !== "bye" && b.type !== "legbye") bw.runs += b.runs;
+        if (b.type === "wicket" && b.dismissal && b.dismissal.bowlerCredit) bw.wkts += 1;
+      }
+      if (b.type === "wicket" && b.dismissal) {
+        st.wkts += 1;
+        st.out[b.dismissal.out] = dismissalText(b.dismissal);
+      }
     });
-    return t;
+    return st;
+  }
+
+  function inningsOver(match, balls, inn) {
+    const s = inningsStats(match, balls, inn);
+    const batters = squad(match, s.team).length;
+    return s.legal >= match.totalOvers * 6 || (batters > 1 && s.wkts >= batters - 1);
+  }
+
+  function availableBatters(match, balls, crease) {
+    const s = inningsStats(match, balls, match.innings);
+    return squad(match, s.team).filter((n) => !(n in s.out) && n !== crease.striker && n !== crease.nonStriker);
+  }
+
+  function availableBowlers(match, balls) {
+    const inn = match.innings;
+    const s = inningsStats(match, balls, inn);
+    const bowlTeam = other(s.team);
+    const mine = balls.filter((b) => b.innings === inn);
+    const last = mine.length ? mine[mine.length - 1] : null;
+    const prev = (s.legal > 0 && s.legal % 6 === 0 && last) ? last.bowler : null;
+    const maxBalls = maxOversFor(match) * 6;
+    return squad(match, bowlTeam).filter((n) => n !== prev && ((s.bowl[n] && s.bowl[n].balls) || 0) < maxBalls);
+  }
+
+  // Crease after a ball (null means "needs to be selected").
+  function nextCrease(crease, ball, legalAfter) {
+    let s = crease.striker, n = crease.nonStriker, b = crease.bowler;
+    let rot = 0;
+    if (ball.type === "run" || ball.type === "bye" || ball.type === "legbye" || ball.type === "wicket") rot = ball.runs;
+    else if (ball.type === "wide" || ball.type === "noball") rot = ball.runs - 1;
+    if (rot % 2 === 1) { const x = s; s = n; n = x; }
+    if (ball.type === "wicket" && ball.dismissal) {
+      if (ball.dismissal.out === s) s = null;
+      else if (ball.dismissal.out === n) n = null;
+    }
+    if (ball.legal && legalAfter % 6 === 0) { const x = s; s = n; n = x; b = null; }
+    return { striker: s, nonStriker: n, bowler: b };
+  }
+
+  function makeBall(match, balls, crease, type, value, wk) {
+    const inn = match.innings;
+    const legalNow = balls.filter((b) => b.innings === inn && b.legal).length;
+    let runs = 0, batRuns = 0, legal = true, label = "", chip = "", dismissal = null;
+    switch (type) {
+      case "run":
+        runs = value; batRuns = value; chip = String(value);
+        label = value === 0 ? "no run" : value === 4 ? "FOUR!" : value === 6 ? "SIX!" : value + (value === 1 ? " run" : " runs");
+        break;
+      case "wicket": {
+        const kind = wk.kind;
+        runs = kind === "run out" ? (wk.runs || 0) : 0;
+        batRuns = runs;
+        dismissal = { kind, out: wk.out, fielder: wk.fielder || null, bowler: crease.bowler, bowlerCredit: kind !== "run out" };
+        chip = "W";
+        label = "OUT! " + wk.out + " " + dismissalText(dismissal);
+        break;
+      }
+      case "wide":
+        runs = 1 + value; legal = false; chip = "Wd";
+        label = "wide" + (value ? " + " + value : "");
+        break;
+      case "noball":
+        runs = 1 + value; batRuns = value; legal = false; chip = "Nb";
+        label = "no ball" + (value ? ", " + value + " off the bat" : "");
+        break;
+      case "bye":
+        runs = value; chip = "B"; label = value + (value === 1 ? " bye" : " byes");
+        break;
+      case "legbye":
+        runs = value; chip = "Lb"; label = value + (value === 1 ? " leg bye" : " leg byes");
+        break;
+    }
+    const over = Math.floor(legalNow / 6) + "." + ((legalNow % 6) + 1);
+    return {
+      seq: balls.length ? balls[balls.length - 1].seq + 1 : 1,
+      innings: inn, type, runs, batRuns, legal,
+      striker: crease.striker, nonStriker: crease.nonStriker, bowler: crease.bowler,
+      dismissal, label, chip, over,
+      text: over + "  " + crease.bowler + " to " + crease.striker + ": " + label
+    };
+  }
+
+  function sr(runs, balls) { return balls > 0 ? (runs * 100 / balls).toFixed(1) : "-"; }
+
+  function scorecardFor(match, balls, inn, crease) {
+    const s = inningsStats(match, balls, inn);
+    const names = s.order.slice();
+    if (inn === match.innings && crease) {
+      [crease.striker, crease.nonStriker].forEach((n) => { if (n && !names.includes(n)) names.push(n); });
+    }
+    return {
+      team: s.team,
+      runs: s.runs, wkts: s.wkts, overs: oversText(s.legal),
+      batting: names.map((n) => {
+        const b = s.bat[n] || { runs: 0, balls: 0, fours: 0, sixes: 0 };
+        return { name: n, runs: b.runs, balls: b.balls, fours: b.fours, sixes: b.sixes, out: s.out[n] || null };
+      }),
+      bowling: Object.keys(s.bowl).map((n) => ({
+        name: n, overs: oversText(s.bowl[n].balls), runs: s.bowl[n].runs, wkts: s.bowl[n].wkts
+      }))
+    };
   }
 
   // Fields to store on the match document, computed from all ball events.
-  function buildMatchFields(match, balls) {
+  function buildMatchFields(match, balls, crease) {
     const first = match.battingFirst;
     const second = other(first);
-    const t = totals(match, balls);
+    const t = { A: { runs: 0, wkts: 0, legal: 0, n: 0 }, B: { runs: 0, wkts: 0, legal: 0, n: 0 } };
+    [1, 2].forEach((inn) => {
+      const s = inningsStats(match, balls, inn);
+      t[s.team] = { runs: s.runs, wkts: s.wkts, legal: s.legal, n: s.n };
+    });
     const cur = match.innings === 2 ? second : first;
     const live = match.status === "live";
     const sc = (k) => (t[k].n > 0 ? t[k].runs + "/" + t[k].wkts : (k === cur && live ? "0/0" : "-"));
@@ -287,7 +514,12 @@
       scoreB: sc("B"),
       overs: oversText(t[cur].legal) + " ov",
       battingTeam: cur,
-      innings: match.innings || 1
+      innings: match.innings || 1,
+      crease: crease || emptyCrease(),
+      scorecard: {
+        i1: scorecardFor(match, balls, 1, crease),
+        i2: scorecardFor(match, balls, 2, crease)
+      }
     };
     if (match.innings === 2) {
       const target = t[first].runs + 1;
@@ -307,55 +539,33 @@
   function resultText(match, balls) {
     const first = match.battingFirst;
     const second = other(first);
-    const t = totals(match, balls);
-    const r1 = t[first].runs;
-    const r2 = t[second].runs;
-    if (r2 > r1) return nameOf(match, second) + " won by " + (10 - t[second].wkts) + " wickets";
+    const a = inningsStats(match, balls, 1);
+    const b = inningsStats(match, balls, 2);
+    const r1 = a.runs, r2 = b.runs;
+    const wicketsLeft = Math.max(0, squad(match, second).length - 1 - b.wkts);
+    if (r2 > r1) return nameOf(match, second) + " won by " + wicketsLeft + " wickets";
     if (r1 > r2) return nameOf(match, first) + " won by " + (r1 - r2) + " runs";
     return "Match tied";
   }
 
-  function makeBall(match, balls, type, value) {
-    const legalNow = balls.filter((b) => b.innings === match.innings && b.legal).length;
-    let runs = 0, legal = true, label = "";
-    switch (type) {
-      case "run":
-        runs = value; label = value === 0 ? "Dot ball" : value === 4 ? "FOUR!" : value === 6 ? "SIX!" : value + (value === 1 ? " run" : " runs");
-        break;
-      case "wicket":
-        runs = 0; label = "WICKET!";
-        break;
-      case "wide":
-        runs = 1 + value; legal = false; label = "Wide" + (value ? " + " + value : "");
-        break;
-      case "noball":
-        runs = 1 + value; legal = false; label = "No ball" + (value ? " + " + value + " off the bat" : "");
-        break;
-      case "bye":
-        runs = value; label = "Bye " + value;
-        break;
-      case "legbye":
-        runs = value; label = "Leg bye " + value;
-        break;
-    }
-    const overNo = Math.floor(legalNow / 6);
-    const ballNo = legal ? (legalNow % 6) + 1 : (legalNow % 6) + 1;
-    const chip = type === "run" ? String(value) : type === "wicket" ? "W" : type === "wide" ? "Wd" : type === "noball" ? "Nb" : type === "bye" ? "B" : "Lb";
-    return {
-      seq: balls.length ? balls[balls.length - 1].seq + 1 : 1,
-      innings: match.innings,
-      type, runs, legal, label, chip,
-      over: overNo + "." + ballNo,
-      text: overNo + "." + ballNo + "  " + label
-    };
+  function parsePlayers(text) {
+    const seen = new Set();
+    const out = [];
+    String(text || "").split(/[\n,]/).map((x) => x.trim()).filter(Boolean).forEach((n) => {
+      const k = n.toLowerCase();
+      if (!seen.has(k)) { seen.add(k); out.push(n); }
+    });
+    return out;
   }
   // ==== PURE:END ====
 
   // ---------- state ----------
-  const S = { profile: null, tournament: null, matches: [], match: null, balls: [], unsub: [], pending: "" };
+  const S = { profile: null, tournament: null, matches: [], match: null, balls: [], pending: "" };
   let tournamentUnsub = null, matchesUnsub = null, matchUnsub = null, ballsUnsub = null;
   let extraType = null;
+  let setupKey = "";
   const extraModal = new bootstrap.Modal($("extraModal"));
+  const wicketModal = new bootstrap.Modal($("wicketModal"));
 
   if (location.protocol === "file:") $("fileWarning").classList.remove("d-none");
 
@@ -401,7 +611,7 @@
 
   function showList() {
     stopMatchListeners();
-    S.match = null; S.balls = [];
+    S.match = null; S.balls = []; setupKey = "";
     $("scoreView").classList.add("d-none");
     $("listView").classList.remove("d-none");
   }
@@ -463,23 +673,10 @@
     body.textContent = "";
     S.matches.forEach((m) => {
       const tr = document.createElement("tr");
-
-      const c1 = document.createElement("td");
-      c1.textContent = m.teamA + " vs " + m.teamB;
-      tr.appendChild(c1);
-
-      const c2 = document.createElement("td");
-      c2.textContent = m.startTime ? new Date(m.startTime).toLocaleString() : "-";
-      tr.appendChild(c2);
-
-      const c3 = document.createElement("td");
-      c3.appendChild(badgeFor(m.status));
-      tr.appendChild(c3);
-
-      const c4 = document.createElement("td");
-      c4.textContent = (m.scoreA || "-") + "  |  " + (m.scoreB || "-");
-      tr.appendChild(c4);
-
+      const c1 = document.createElement("td"); c1.textContent = m.teamA + " vs " + m.teamB; tr.appendChild(c1);
+      const c2 = document.createElement("td"); c2.textContent = m.startTime ? new Date(m.startTime).toLocaleString() : "-"; tr.appendChild(c2);
+      const c3 = document.createElement("td"); c3.appendChild(badgeFor(m.status)); tr.appendChild(c3);
+      const c4 = document.createElement("td"); c4.textContent = (m.scoreA || "-") + "  |  " + (m.scoreB || "-"); tr.appendChild(c4);
       const c5 = document.createElement("td");
       const btn = document.createElement("button");
       btn.className = "btn btn-sm " + (m.status === "final" ? "btn-outline-secondary" : "btn-primary");
@@ -487,7 +684,6 @@
       btn.addEventListener("click", () => onMatchButton(m));
       c5.appendChild(btn);
       tr.appendChild(c5);
-
       body.appendChild(tr);
     });
     $("matchEmpty").classList.toggle("d-none", S.matches.length > 0);
@@ -496,10 +692,13 @@
   async function onMatchButton(m) {
     if (m.status === "upcoming") {
       if (!tournamentActive()) return showMsg("matchFormError", "Tournament is completed.");
+      if (!m.playersA || !m.playersB) {
+        return showMsg("matchFormError", "This match has no players. Create a new match with players.");
+      }
       if (!confirm("Start " + m.teamA + " vs " + m.teamB + " now?")) return;
       try {
         const start = { ...m, status: "live", innings: 1 };
-        await updateDoc(doc(db, "matches", m.id), { status: "live", ...buildMatchFields(start, []) });
+        await updateDoc(doc(db, "matches", m.id), { status: "live", ...buildMatchFields(start, [], emptyCrease()) });
       } catch (err) {
         return showMsg("matchFormError", "Could not start: " + friendlyError(err));
       }
@@ -514,12 +713,26 @@
 
     const teamA = $("mTeamA").value.trim();
     const teamB = $("mTeamB").value.trim();
+    const playersA = parsePlayers($("mPlayersA").value);
+    const playersB = parsePlayers($("mPlayersB").value);
     const totalOvers = parseInt($("mOvers").value, 10);
+    const maxRaw = $("mMaxBowler").value.trim();
     const startTime = Date.parse($("mStart").value);
+
     if (!teamA || !teamB) return showMsg("matchFormError", "Both team names are required.");
     if (teamA.toLowerCase() === teamB.toLowerCase()) return showMsg("matchFormError", "Team names must be different.");
+    if (playersA.length < 2 || playersB.length < 2) return showMsg("matchFormError", "Each team needs at least 2 players.");
+    if (playersA.length > 15 || playersB.length > 15) return showMsg("matchFormError", "A team can have at most 15 players.");
     if (!(totalOvers >= 1 && totalOvers <= 50)) return showMsg("matchFormError", "Overs must be between 1 and 50.");
     if (Number.isNaN(startTime)) return showMsg("matchFormError", "Choose a start date and time.");
+
+    const maxOversPerBowler = maxRaw ? parseInt(maxRaw, 10) : Math.ceil(totalOvers / 5);
+    if (!(maxOversPerBowler >= 1)) return showMsg("matchFormError", "Max overs per bowler must be at least 1.");
+    const fewest = Math.min(playersA.length, playersB.length);
+    if (fewest * maxOversPerBowler < totalOvers) {
+      return showMsg("matchFormError", "Not enough bowling overs: " + fewest + " players x " + maxOversPerBowler +
+        " overs is less than " + totalOvers + " overs. Increase max overs per bowler.");
+    }
 
     $("matchSaveBtn").disabled = true;
     try {
@@ -527,16 +740,18 @@
         tournamentId: S.tournament.id,
         tournamentName: S.tournament.name,
         type: "LOCAL",
-        teamA, teamB,
+        teamA, teamB, playersA, playersB,
         venue: $("mVenue").value.trim() || S.tournament.place || "",
         startTime,
         totalOvers,
+        maxOversPerBowler,
         battingFirst: $("mFirst").value,
         battingTeam: $("mFirst").value,
         innings: 1,
         status: "upcoming",
         scoreA: "-", scoreB: "-", overs: "-",
         summary: "Match not started",
+        crease: emptyCrease(),
         createdBy: auth.currentUser.uid,
         createdAt: serverTimestamp()
       });
@@ -553,6 +768,7 @@
   function openMatch(id) {
     stopMatchListeners();
     showMsg("scoreError", "");
+    setupKey = "";
     $("listView").classList.add("d-none");
     $("scoreView").classList.remove("d-none");
     matchUnsub = onSnapshot(doc(db, "matches", id), (snap) => {
@@ -566,82 +782,236 @@
     }, (err) => showMsg("scoreError", "Could not load balls: " + friendlyError(err)));
   }
 
+  const creaseOf = () => (S.match && S.match.crease) ? S.match.crease : emptyCrease();
+  const creaseComplete = (c) => !!(c.striker && c.nonStriker && c.bowler);
+
   function canScore() {
-    return tournamentActive() && S.match && S.match.status === "live";
+    return !!(tournamentActive() && S.match && S.match.status === "live");
+  }
+
+  function statLine(st, name) {
+    const b = st.bat[name];
+    return b ? b.runs + " (" + b.balls + ")" : "0 (0)";
+  }
+
+  function td(text, cls) {
+    const c = document.createElement("td");
+    if (cls) c.className = cls;
+    c.textContent = text;
+    return c;
   }
 
   function updateScoreUI() {
     const m = S.match;
     if (!m || $("scoreView").classList.contains("d-none")) return;
+    const inn = m.innings || 1;
+    const crease = creaseOf();
+    const s = inningsStats(m, S.balls, inn);
+    const live = m.status === "live";
 
-    $("scNameA").textContent = m.teamA + (m.battingTeam === "A" && m.status === "live" ? "  (batting)" : "");
-    $("scNameB").textContent = m.teamB + (m.battingTeam === "B" && m.status === "live" ? "  (batting)" : "");
+    $("scNameA").textContent = m.teamA + (m.battingTeam === "A" && live ? "  (batting)" : "");
+    $("scNameB").textContent = m.teamB + (m.battingTeam === "B" && live ? "  (batting)" : "");
     $("scScoreA").textContent = m.scoreA || "-";
     $("scScoreB").textContent = m.scoreB || "-";
-    $("scOvers").textContent = (m.overs || "-") + "  / " + m.totalOvers + " ov  (innings " + (m.innings || 1) + ")";
+    $("scOvers").textContent = (m.overs || "-") + "  / " + m.totalOvers + " ov  (innings " + inn + ")";
     $("scSummary").textContent = m.summary || "";
     const st = $("scStatus");
     st.textContent = m.status;
-    st.className = "badge " + (m.status === "live" ? "text-bg-danger" : m.status === "final" ? "text-bg-dark" : "text-bg-secondary");
+    st.className = "badge " + (live ? "text-bg-danger" : m.status === "final" ? "text-bg-dark" : "text-bg-secondary");
 
-    // this over (current innings, last 6 legal balls plus extras in between)
-    const inn = S.balls.filter((b) => b.innings === (m.innings || 1));
-    const legalCount = inn.filter((b) => b.legal).length;
-    const overStartLegal = legalCount - (legalCount % 6 === 0 && legalCount > 0 && false ? 6 : legalCount % 6);
-    let seenLegal = 0;
-    const thisOver = [];
-    inn.forEach((b) => {
-      if (seenLegal >= overStartLegal) thisOver.push(b);
-      if (b.legal) seenLegal += 1;
-    });
+    // at the crease
+    $("creaseStrikerName").textContent = "Striker: " + (crease.striker ? crease.striker + " *" : "-");
+    $("creaseStrikerStat").textContent = crease.striker ? statLine(s, crease.striker) : "";
+    $("creaseNonName").textContent = "Non-striker: " + (crease.nonStriker || "-");
+    $("creaseNonStat").textContent = crease.nonStriker ? statLine(s, crease.nonStriker) : "";
+    $("creaseBowlerName").textContent = "Bowler: " + (crease.bowler || "-");
+    const bw = crease.bowler ? s.bowl[crease.bowler] : null;
+    $("creaseBowlerStat").textContent = crease.bowler
+      ? (bw ? oversText(bw.balls) + "-" + bw.runs + "-" + bw.wkts : "0.0-0-0")
+      : "";
+
+    // this over chips
+    const mine = S.balls.filter((b) => b.innings === inn);
+    const into = s.legal % 6;
+    let need = into, startIdx = mine.length;
+    if (into === 0 && mine.length && !(inningsOver(m, S.balls, inn))) startIdx = mine.length;
+    if (into > 0) {
+      let seen = 0;
+      for (let i = mine.length - 1; i >= 0; i--) {
+        if (mine[i].legal) seen += 1;
+        if (seen === need) { startIdx = i; break; }
+      }
+    }
+    // include illegal balls just before first legal ball of this over
+    while (startIdx > 0 && !mine[startIdx - 1].legal && into > 0) startIdx -= 1;
     const rb = $("recentBalls");
     rb.textContent = "";
-    if (thisOver.length === 0) rb.textContent = "No balls yet in this over.";
-    thisOver.forEach((b) => {
-      const s = document.createElement("span");
-      const cls = b.type === "wicket" ? "text-bg-danger" : b.type === "run" && (b.runs === 4 || b.runs === 6) ? "text-bg-success" : b.legal ? "text-bg-secondary" : "text-bg-warning";
-      s.className = "ball-chip " + cls;
-      s.textContent = b.chip || b.runs;
-      rb.appendChild(s);
+    const chips = into === 0 ? [] : mine.slice(startIdx);
+    if (chips.length === 0) rb.textContent = "-";
+    chips.forEach((b) => {
+      const sp = document.createElement("span");
+      const cls = b.type === "wicket" ? "text-bg-danger" : (b.type === "run" && (b.runs === 4 || b.runs === 6)) ? "text-bg-success" : b.legal ? "text-bg-secondary" : "text-bg-warning";
+      sp.className = "ball-chip " + cls;
+      sp.textContent = b.chip || b.runs;
+      rb.appendChild(sp);
     });
 
-    // commentary (latest first, up to 15)
-    const ul = $("commentary");
-    ul.textContent = "";
-    S.balls.slice(-15).reverse().forEach((b) => {
-      const li = document.createElement("li");
-      li.className = "list-group-item";
-      li.textContent = "Inn " + b.innings + " | " + b.text;
-      ul.appendChild(li);
+    // scorecard tables
+    $("batTitle").textContent = "Batting: " + nameOf(m, s.team) + " (innings " + inn + ")";
+    const sc = scorecardFor(m, S.balls, inn, crease);
+    const batBody = $("batRows");
+    batBody.textContent = "";
+    sc.batting.forEach((b) => {
+      const tr = document.createElement("tr");
+      const first = document.createElement("td");
+      const nm = document.createElement("div");
+      nm.textContent = b.name + (b.name === crease.striker ? " *" : "");
+      first.appendChild(nm);
+      const sub = document.createElement("div");
+      sub.className = "text-secondary small";
+      sub.textContent = b.out || (live && (b.name === crease.striker || b.name === crease.nonStriker) ? "not out" : "");
+      first.appendChild(sub);
+      tr.appendChild(first);
+      tr.appendChild(td(b.runs, "text-end"));
+      tr.appendChild(td(b.balls, "text-end"));
+      tr.appendChild(td(b.fours, "text-end"));
+      tr.appendChild(td(b.sixes, "text-end"));
+      tr.appendChild(td(sr(b.runs, b.balls), "text-end"));
+      batBody.appendChild(tr);
+    });
+    const bowlBody = $("bowlRows");
+    bowlBody.textContent = "";
+    Object.keys(s.bowl).forEach((n) => {
+      const x = s.bowl[n];
+      const tr = document.createElement("tr");
+      tr.appendChild(td(n));
+      tr.appendChild(td(oversText(x.balls), "text-end"));
+      tr.appendChild(td(x.runs, "text-end"));
+      tr.appendChild(td(x.wkts, "text-end"));
+      tr.appendChild(td(x.balls > 0 ? (x.runs * 6 / x.balls).toFixed(1) : "-", "text-end"));
+      bowlBody.appendChild(tr);
     });
 
-    const enabled = canScore();
-    document.querySelectorAll("[data-run],[data-kind]").forEach((btn) => { btn.disabled = !enabled; });
-    $("undoBtn").disabled = !enabled;
-    $("secondInningsBtn").disabled = !enabled || m.innings === 2;
-    $("finalBtn").disabled = !enabled;
+    // setup card (select openers / next batsman / next bowler) and hints
+    const over = live && inningsOver(m, S.balls, inn);
+    const needStriker = live && !over && !crease.striker;
+    const needNon = live && !over && !crease.nonStriker;
+    const needBowler = live && !over && !crease.bowler;
+    const bats = availableBatters(m, S.balls, crease);
+    const bowls = availableBowlers(m, S.balls);
+    const key = [m.id, inn, S.balls.length, needStriker, needNon, needBowler, crease.striker, crease.nonStriker, crease.bowler].join("|");
+    const card = $("setupCard");
+    if (needStriker || needNon || needBowler) {
+      card.classList.remove("d-none");
+      if (key !== setupKey) { setupKey = key; buildSetup(needStriker, needNon, needBowler, bats, bowls, crease); }
+    } else {
+      card.classList.add("d-none");
+      setupKey = "";
+    }
+
+    const hint = $("hint");
+    let hintText = "";
+    if (live && over) {
+      hintText = inn === 1
+        ? "Innings over. Press 'Start 2nd innings'."
+        : "Innings over. Press 'Declare result'.";
+    } else if (live && (needStriker || needNon || needBowler)) {
+      if (needBowler && bowls.length === 0) hintText = "No bowler is available (max overs per bowler reached).";
+      else if ((needStriker || needNon) && bats.length === 0) hintText = "No batter is available.";
+    }
+    if (live && !over && inn === 2 && m.target) {
+      const batted = inningsStats(m, S.balls, 2);
+      if (batted.runs >= m.target) hintText = "Target reached. Press 'Declare result'.";
+    }
+    hint.textContent = hintText;
+    hint.classList.toggle("d-none", !hintText);
+
+    const scoring = canScore() && creaseComplete(crease) && !over;
+    document.querySelectorAll("[data-run],[data-kind]").forEach((btn) => { btn.disabled = !scoring; });
+    $("undoBtn").disabled = !canScore() || mine.length === 0;
+    $("secondInningsBtn").disabled = !canScore() || inn === 2;
+    $("finalBtn").disabled = !canScore();
   }
 
-  async function writeBallAndMatch(match, balls, ball) {
-    const batch = writeBatch(db);
-    const ref = doc(collection(db, "matches", match.id, "balls"));
-    batch.set(ref, { ...ball, createdAt: serverTimestamp() });
-    const all = balls.concat([ball]);
-    batch.update(doc(db, "matches", match.id), buildMatchFields(match, all));
-    await batch.commit();
+  function selectEl(id, labelText, names) {
+    const wrap = document.createElement("div");
+    wrap.className = "mb-3";
+    const lab = document.createElement("label");
+    lab.className = "form-label";
+    lab.htmlFor = id;
+    lab.textContent = labelText;
+    const sel = document.createElement("select");
+    sel.className = "form-select";
+    sel.id = id;
+    names.forEach((n) => {
+      const o = document.createElement("option");
+      o.value = n; o.textContent = n;
+      sel.appendChild(o);
+    });
+    wrap.appendChild(lab);
+    wrap.appendChild(sel);
+    return wrap;
   }
 
-  async function addBall(type, value) {
+  function buildSetup(needStriker, needNon, needBowler, bats, bowls, crease) {
+    const box = $("setupFields");
+    box.textContent = "";
+    const parts = [];
+    if (needStriker) parts.push("striker");
+    if (needNon) parts.push("non-striker");
+    if (needBowler) parts.push("bowler");
+    $("setupTitle").textContent = "Select " + parts.join(", ");
+    if (needStriker && needNon) {
+      box.appendChild(selectEl("setStriker", "Opening striker", bats));
+      box.appendChild(selectEl("setNon", "Opening non-striker", bats));
+      const ns = $("setNon");
+      if (bats.length > 1) ns.selectedIndex = 1;
+    } else if (needStriker) {
+      box.appendChild(selectEl("setStriker", crease.nonStriker ? "New batter (striker's end)" : "Striker", bats));
+    } else if (needNon) {
+      box.appendChild(selectEl("setNon", "New batter (non-striker's end)", bats));
+    }
+    if (needBowler) box.appendChild(selectEl("setBowler", "Bowler for this over", bowls));
+  }
+
+  $("setupBtn").addEventListener("click", async () => {
+    if (!canScore()) return;
+    const m = S.match;
+    const c = { ...creaseOf() };
+    const g = (id) => { const e = $(id); return e && e.value ? e.value : null; };
+    const st = g("setStriker"), nn = g("setNon"), bw = g("setBowler");
+    if (st) c.striker = st;
+    if (nn) c.nonStriker = nn;
+    if (bw) c.bowler = bw;
+    if (c.striker && c.nonStriker && c.striker === c.nonStriker) {
+      return showMsg("scoreError", "Striker and non-striker must be different players.");
+    }
+    if (document.getElementById("setStriker") && !st) return showMsg("scoreError", "No player available to select.");
+    if (document.getElementById("setNon") && !nn) return showMsg("scoreError", "No player available to select.");
+    if (document.getElementById("setBowler") && !bw) return showMsg("scoreError", "No bowler available to select.");
+    showMsg("scoreError", "");
+    try {
+      await updateDoc(doc(db, "matches", m.id), { crease: c });
+    } catch (err) {
+      showMsg("scoreError", "Could not save: " + friendlyError(err));
+    }
+  });
+
+  async function addBall(type, value, wk) {
     if (!canScore()) return;
     showMsg("scoreError", "");
     const m = S.match;
+    const crease = creaseOf();
+    if (!creaseComplete(crease)) return showMsg("scoreError", "Select batters and bowler first.");
+    if (inningsOver(m, S.balls, m.innings)) return showMsg("scoreError", "Innings is over.");
     const legalNow = S.balls.filter((b) => b.innings === m.innings && b.legal).length;
-    if (legalNow >= m.totalOvers * 6) {
-      return showMsg("scoreError", "All overs are complete. Start the 2nd innings or declare the result.");
-    }
-    const ball = makeBall(m, S.balls, type, value);
+    const ball = makeBall(m, S.balls, crease, type, value, wk);
+    const next = nextCrease(crease, ball, legalNow + (ball.legal ? 1 : 0));
     try {
-      await writeBallAndMatch(m, S.balls, ball);
+      const batch = writeBatch(db);
+      batch.set(doc(collection(db, "matches", m.id, "balls")), { ...ball, createdAt: serverTimestamp() });
+      batch.update(doc(db, "matches", m.id), buildMatchFields(m, S.balls.concat([ball]), next));
+      await batch.commit();
     } catch (err) {
       showMsg("scoreError", "Could not save ball: " + friendlyError(err));
     }
@@ -653,7 +1023,7 @@
   document.querySelectorAll("[data-kind]").forEach((b) => {
     b.addEventListener("click", () => {
       const kind = b.dataset.kind;
-      if (kind === "wicket") return addBall("wicket", 0);
+      if (kind === "wicket") return openWicket();
       openExtra(kind);
     });
   });
@@ -685,6 +1055,56 @@
     extraModal.show();
   }
 
+  // ---------- wicket ----------
+  function fillSelect(sel, names, withBlank) {
+    sel.textContent = "";
+    if (withBlank) {
+      const o = document.createElement("option");
+      o.value = ""; o.textContent = "-";
+      sel.appendChild(o);
+    }
+    names.forEach((n) => {
+      const o = document.createElement("option");
+      o.value = n; o.textContent = n;
+      sel.appendChild(o);
+    });
+  }
+
+  function syncWicketForm() {
+    const kind = $("wKind").value;
+    $("wOutWrap").classList.toggle("d-none", kind !== "run out");
+    $("wRunsWrap").classList.toggle("d-none", kind !== "run out");
+    $("wFielderWrap").classList.toggle("d-none", !(kind === "caught" || kind === "run out" || kind === "stumped"));
+  }
+  $("wKind").addEventListener("change", syncWicketForm);
+
+  function openWicket() {
+    if (!canScore()) return;
+    const m = S.match;
+    const crease = creaseOf();
+    if (!creaseComplete(crease)) return showMsg("scoreError", "Select batters and bowler first.");
+    const bowlTeam = other(battingKey(m, m.innings));
+    fillSelect($("wOut"), [crease.striker, crease.nonStriker], false);
+    fillSelect($("wFielder"), squad(m, bowlTeam), true);
+    $("wKind").value = "bowled";
+    $("wRuns").value = "0";
+    syncWicketForm();
+    wicketModal.show();
+  }
+
+  $("wConfirm").addEventListener("click", () => {
+    const crease = creaseOf();
+    const kind = $("wKind").value;
+    const out = kind === "run out" ? $("wOut").value : crease.striker;
+    const fielder = (kind === "caught" || kind === "run out" || kind === "stumped") ? ($("wFielder").value || null) : null;
+    if (kind === "caught" && !fielder) {
+      showMsg("scoreError", "");
+    }
+    const runs = kind === "run out" ? parseInt($("wRuns").value, 10) : 0;
+    wicketModal.hide();
+    addBall("wicket", 0, { kind, out, fielder, runs });
+  });
+
   $("undoBtn").addEventListener("click", async () => {
     if (!canScore() || S.balls.length === 0) return;
     const m = S.match;
@@ -692,9 +1112,10 @@
     if (last.innings !== m.innings) return showMsg("scoreError", "Nothing to undo in this innings.");
     if (!confirm("Remove last ball: " + last.text + " ?")) return;
     try {
+      const restored = { striker: last.striker, nonStriker: last.nonStriker, bowler: last.bowler };
       const batch = writeBatch(db);
       batch.delete(doc(db, "matches", m.id, "balls", last.id));
-      batch.update(doc(db, "matches", m.id), buildMatchFields(m, S.balls.slice(0, -1)));
+      batch.update(doc(db, "matches", m.id), buildMatchFields(m, S.balls.slice(0, -1), restored));
       await batch.commit();
     } catch (err) {
       showMsg("scoreError", "Could not undo: " + friendlyError(err));
@@ -704,10 +1125,10 @@
   $("secondInningsBtn").addEventListener("click", async () => {
     if (!canScore() || S.match.innings === 2) return;
     const m = S.match;
-    const t = totals(m, S.balls);
-    if (!confirm("End innings 1 at " + t[m.battingFirst].runs + "/" + t[m.battingFirst].wkts + " and start the 2nd innings?")) return;
+    const s = inningsStats(m, S.balls, 1);
+    if (!confirm("End innings 1 at " + s.runs + "/" + s.wkts + " and start the 2nd innings?")) return;
     try {
-      await updateDoc(doc(db, "matches", m.id), buildMatchFields({ ...m, innings: 2 }, S.balls));
+      await updateDoc(doc(db, "matches", m.id), buildMatchFields({ ...m, innings: 2 }, S.balls, emptyCrease()));
     } catch (err) {
       showMsg("scoreError", "Could not start 2nd innings: " + friendlyError(err));
     }
@@ -768,6 +1189,7 @@
       await signOut(auth);
     }
   });
+
 </script>
 </body>
 </html>
